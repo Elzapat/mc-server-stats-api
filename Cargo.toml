@@ -1,0 +1,15 @@
+[package]
+name = "mc-server-stats"
+version = "0.1.0"
+authors = ["Morgan Van Amerongen <van-amerongen.morgan@gmail.com>"]
+edition = "2018"
+
+[profile.release]
+opt-level = 's'  # Optimize for size.
+lto = true # Link Time Optimization (LTO)
+
+[dependencies]
+rocket = "0.4.7"
+rocket_contrib = "0.4.7"
+serde = { version = "1.0.123", features = ["derive"] }
+serde_json = "1.0"

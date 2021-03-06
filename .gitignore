@@ -1,0 +1,6 @@
+/target
+compile_full_static.txt
+world
+Cargo.lock
+Rocket.toml
+StatsLookup.jar
