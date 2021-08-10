@@ -6,6 +6,10 @@ extern crate serde;
 mod cors;
 mod api;
 
+pub struct WorldDir<'a> {
+    path: &'a str,
+}
+
 use crate::{
     cors::CORS,
     api::v1,
@@ -13,7 +17,10 @@ use crate::{
 
 fn main() {
     rocket::ignite()
-        .mount("/", routes![v1::handle_stats])
+        .manage(WorldDir { path: env!("WORLD_DIR") })
+        .mount("/", routes![
+            v1::stats::handle_stats,
+        ])
         .attach(CORS)
         .launch();
 }

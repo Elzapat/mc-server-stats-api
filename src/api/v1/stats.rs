@@ -1,11 +1,12 @@
 use rocket_contrib::json::Json;
-use rocket::get;
+use rocket::State;
 use serde::Serialize;
 use serde_json::Value;
 use std::fs;
+use crate::WorldDir;
 
 #[derive(Serialize)]
-struct Stats(Vec<PlayerStat>);
+pub struct Stats(Vec<PlayerStat>);
 
 #[derive(Serialize)]
 struct PlayerStat {
@@ -25,18 +26,23 @@ impl PlayerStat {
 }
 
 #[get("/api/v1/stats?<uuid>&<stat_type>&<stat_name>")]
-pub fn handle_stats(mut uuid: String, stat_type: String, stat_name: String) -> Json<Stats> {
+pub fn handle_stats(
+    mut uuid: String,
+    stat_type: String,
+    stat_name: String,
+    world_dir: State<WorldDir>
+) -> Json<Stats> {
     if &uuid == "all" {
         let mut all_stats = vec![];
 
-        let files = match fs::read_dir("world/stats") {
+        let files = match fs::read_dir(format!("{}/stats", world_dir.path)) {
             Ok(f) => f,
             Err(e) => return Json(Stats(vec![PlayerStat {
                 success: false,
                 uuid: uuid,
                 stat: 0,
                 error_message: Some(e.to_string()),
-            }]))
+            }])),
         };
         for file in files {
             // let path_os_str = match file {
@@ -58,7 +64,7 @@ pub fn handle_stats(mut uuid: String, stat_type: String, stat_name: String) -> J
                         all_stats.push(get_stat(player_uuid.to_string(), stat_type.clone(), stat_name.clone()));
                     }
                 }
-            } 
+            }
         }
         Json(Stats(all_stats))
     } else {
