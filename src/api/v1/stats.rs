@@ -61,7 +61,7 @@ pub fn handle_stats(
                 if let Ok(path_str) = file.path().into_os_string().into_string() {
                     if let Some(pos) = path_str.rfind('/') {
                         let player_uuid = &path_str[pos + 1..path_str.len() - 5];
-                        all_stats.push(get_stat(player_uuid.to_string(), stat_type.clone(), stat_name.clone()));
+                        all_stats.push(get_stat(player_uuid.to_string(), stat_type.clone(), stat_name.clone(), world_dir.path));
                     }
                 }
             }
@@ -72,11 +72,11 @@ pub fn handle_stats(
             uuid = format!("{}-{}-{}-{}-{}",
                 &uuid[0..8], &uuid[8..12], &uuid[12..16], &uuid[16..20], &uuid[20..32]);
         }
-        Json(Stats(vec![get_stat(uuid, stat_type, stat_name)]))
+        Json(Stats(vec![get_stat(uuid, stat_type, stat_name, world_dir.path)]))
     }
 }
 
-fn get_stat(uuid: String, stat_type: String, stat_name: String) -> PlayerStat {
+fn get_stat(uuid: String, stat_type: String, stat_name: String, world_dir: &str) -> PlayerStat {
     let failure = PlayerStat {
         success: false,
         uuid: uuid.clone(),
@@ -84,7 +84,7 @@ fn get_stat(uuid: String, stat_type: String, stat_name: String) -> PlayerStat {
         error_message: Some(String::from("")),
     };
 
-    let stats_str = match fs::read_to_string(format!("world/stats/{}.json", uuid)) {
+    let stats_str = match fs::read_to_string(format!("{}/stats/{}.json", world_dir, uuid)) {
         Ok(s) => s,
         Err(e) => return failure.error_message(format!("Error: {}, this player probably has never logged on the server", e))
     };
