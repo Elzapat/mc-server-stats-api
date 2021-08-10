@@ -4,112 +4,16 @@
 extern crate serde;
 
 mod cors;
+mod api;
 
-use rocket_contrib::json::Json;
-use serde::Serialize;
-use serde_json::Value;
-use std::fs;
-use crate::cors::CORS;
-
-#[derive(Serialize)]
-struct PlayerStat {
-    success: bool,
-    uuid: String,
-    stat: u64,
-    error_message: Option<String>,
-}
-
-impl PlayerStat {
-    pub fn error_message(self, error_message: String) -> Self {
-        PlayerStat {
-            error_message: Some(error_message),
-            ..self
-        }
-    }
-}
-
-#[derive(Serialize)]
-struct Stats(Vec<PlayerStat>);
-
-#[get("/stats?<uuid>&<stat_type>&<stat_name>")]
-fn handle_stats(mut uuid: String, stat_type: String, stat_name: String) -> Json<Stats> {
-    if &uuid == "all" {
-        let mut all_stats = vec![];
-
-        let files = match fs::read_dir("world/stats") {
-            Ok(f) => f,
-            Err(e) => return Json(Stats(vec![PlayerStat {
-                success: false,
-                uuid: uuid,
-                stat: 0,
-                error_message: Some(e.to_string()),
-            }]))
-        };
-        for file in files {
-            // let path_os_str = match file {
-            //     Ok(p) => p.path().into_os_string(),
-            //     Err(_) => continue
-            // };
-            // let path_str = match path_os_str.into_string() {
-            //     Ok(s) => s,
-            //     Err(_) => continue
-            // };
-            // let pos = match path_str.rfind('/') {
-            //     Some(p) => p,
-            //     None => continue,
-            // };
-            if let Ok(file) = file {
-                if let Ok(path_str) = file.path().into_os_string().into_string() {
-                    if let Some(pos) = path_str.rfind('/') {
-                        let player_uuid = &path_str[pos + 1..path_str.len() - 5];
-                        all_stats.push(get_stat(player_uuid.to_string(), stat_type.clone(), stat_name.clone()));
-                    }
-                }
-            } 
-        }
-        Json(Stats(all_stats))
-    } else {
-        if !uuid.contains("-") {
-            uuid = format!("{}-{}-{}-{}-{}",
-                &uuid[0..8], &uuid[8..12], &uuid[12..16], &uuid[16..20], &uuid[20..32]);
-        }
-        Json(Stats(vec![get_stat(uuid, stat_type, stat_name)]))
-    }
-}
-
-fn get_stat(uuid: String, stat_type: String, stat_name: String) -> PlayerStat {
-    let failure = PlayerStat {
-        success: false,
-        uuid: uuid.clone(),
-        stat: 0,
-        error_message: Some(String::from("")),
-    };
-
-    let stats_str = match fs::read_to_string(format!("world/stats/{}.json", uuid)) {
-        Ok(s) => s,
-        Err(e) => return failure.error_message(format!("Error: {}, this player probably has never logged on the server", e))
-    };
-    let stats_json: Value = match serde_json::from_str(&stats_str) {
-        Ok(v) => v,
-        Err(e) => return failure.error_message(format!("Error: {}", e))
-    };
-    let value: u64 = match stats_json["stats"][stat_type][stat_name].as_u64() {
-        Some(s) => s,
-        None => return failure.error_message(String::from("Error: couldn't find this stat"))
-    };
-
-    PlayerStat {
-        success: true,
-        uuid: uuid,
-        stat: value,
-        error_message: None,
-    }
-}
-
+use crate::{
+    cors::CORS,
+    api::v1,
+};
 
 fn main() {
     rocket::ignite()
-        .mount("/", routes![handle_stats])
+        .mount("/", routes![v1::handle_stats])
         .attach(CORS)
         .launch();
 }
