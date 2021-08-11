@@ -28,8 +28,9 @@ fn main() {
             api::v1::stats::handle_stats,
         ])
         .mount("/api/v2", routes![
-            api::v2::routes::global_stats,
+            api::v2::routes::player_stat,
             api::v2::routes::player_stats,
+            api::v2::routes::global_stats,
         ])
         .attach(CORS)
         .launch();

@@ -10,7 +10,7 @@ use serde::Serialize;
 
 pub type ApiResponse<T> = Result<ApiSuccess<T>, ApiError>;
 
-enum ApiError {
+pub enum ApiError {
     ApiError,
 }
 
