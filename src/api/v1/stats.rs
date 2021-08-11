@@ -25,7 +25,7 @@ impl PlayerStat {
     }
 }
 
-#[get("/api/v1/stats?<uuid>&<stat_type>&<stat_name>")]
+#[get("/stats?<uuid>&<stat_type>&<stat_name>")]
 pub fn handle_stats(
     mut uuid: String,
     stat_type: String,
