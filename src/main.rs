@@ -3,17 +3,12 @@
 #[macro_use] extern crate rocket;
 extern crate serde;
 
+pub mod username_cache;
 mod cors;
 mod api;
 
-use std::collections::HashMap;
-
 pub struct WorldDir<'a> {
     path: &'a str,
-}
-
-pub struct UsernameCache<'a> {
-    cache: HashMap<&'a str, &'a str>,
 }
 
 use crate::{
@@ -23,7 +18,7 @@ use crate::{
 fn main() {
     rocket::ignite()
         .manage(WorldDir { path: env!("WORLD_DIR") })
-        .manage(UsernameCache { cache: HashMap::new() })
+        .manage(username_cache::UsernameCache::new())
         .mount("/api/v1", routes![
             api::v1::stats::handle_stats,
         ])

@@ -7,7 +7,7 @@ pub struct Stat {
     #[serde(rename(serialize = "type"))]
     typ: String,
     name: String,
-    value: u64,
+    value: Option<u64>,
 }
 
 #[derive(Serialize, Debug)]
@@ -35,7 +35,7 @@ pub struct PlayerStatValue {
 }
 
 #[derive(Serialize, Debug)]
-struct GlobalStats {
+pub struct GlobalStats {
     stat: Stat,
     player_stats: Vec<PlayerStatValue>,
 }

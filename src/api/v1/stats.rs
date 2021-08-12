@@ -104,4 +104,3 @@ fn get_stat(uuid: String, stat_type: String, stat_name: String, world_dir: &str)
         error_message: None,
     }
 }
-
